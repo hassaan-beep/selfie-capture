@@ -1,0 +1,67 @@
+---
+
+Updated Code: Capture & Upload to Server
+
+This version captures a selfie and sends it to the host's server.
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Camera Capture</title>
+</head>
+<body>
+    <h2>Live Camera Feed</h2>
+    <video id="video" width="300" height="300" autoplay></video>
+    <br>
+    <button id="snap">Take Photo</button>
+    <canvas id="canvas" width="300" height="300" style="display:none;"></canvas>
+    <br>
+    <a id="download" style="display:none;">Download Selfie</a>
+
+    <script>
+        // Start live camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                document.getElementById('video').srcObject = stream;
+            })
+            .catch(function(error) {
+                alert("Camera access denied or unavailable.");
+                console.error("Error accessing camera:", error);
+            });
+
+        // Capture photo and upload
+        document.getElementById('snap').addEventListener('click', function() {
+            let video = document.getElementById('video');
+            let canvas = document.getElementById('canvas');
+            let context = canvas.getContext('2d');
+
+            // Draw video frame on canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to image
+            let imageUrl = canvas.toDataURL('image/png');
+
+            // Allow user to download
+            let downloadLink = document.getElementById('download');
+            downloadLink.href = imageUrl;
+            downloadLink.download = "selfie.png";
+            downloadLink.innerHTML = "Download Selfie";
+            downloadLink.style.display = "block";
+
+            // Upload to server
+            uploadToServer(imageUrl);
+        });
+
+        function uploadToServer(imageData) {
+            fetch("https://yourserver.com/upload", { // Change to your server URL
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => console.log("Uploaded:", data))
+            .catch(error => console.error("Upload error:", error));
+        }
+    </script>
+</body>
+</html>
